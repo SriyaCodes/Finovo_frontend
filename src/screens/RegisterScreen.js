@@ -11,32 +11,28 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FormInput } from '../components/FormInput';
+import { useTheme } from '../styles/theme';
+import { useAlert } from '../contexts/AlertContext';
 import authService from '../services/authService';
 import getRegisterStyles from '../styles/RegisterScreen.styles';
-import { useTheme } from '../styles/theme';
 
-// ─── Animation config ─────────────────────────────────────────────────────────
+// --- Animation config ---
 const EASING_ENTER = Easing.out(Easing.cubic);
 
-/**
- * RegisterScreen
- *
- * Handles new account creation.
- * On success, calls onRegisterSuccess(data) which logs the user in immediately.
- *
- * @param {{ onBack: () => void, onSignInPress: () => void, onRegisterSuccess: (data: object) => void }} props
- */
 export default function RegisterScreen({ onBack, onSignInPress, onRegisterSuccess }) {
     const { colors } = useTheme();
+    const { showAlert } = useAlert();
     const styles = React.useMemo(() => getRegisterStyles(colors), [colors]);
 
     const [fullName, setFullName] = useState('');
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
+    const [mobileNumber, setMobileNumber] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
 
-    // ── Entrance animated values ─────────────────────────────────────────────
+    // --- Entrance animated values ---
     const headerAnim = useRef(new Animated.Value(0)).current;
     const heroAnim = useRef(new Animated.Value(0)).current;
     const heroSlideY = useRef(new Animated.Value(16)).current;
@@ -105,7 +101,6 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
         ]).start();
     }, []);
 
-    // ── Button press feedback ─────────────────────────────────────────────────
     const onPressIn = useCallback(() => {
         Animated.spring(buttonScale, { toValue: 0.96, friction: 4, useNativeDriver: true }).start();
     }, [buttonScale]);
@@ -114,45 +109,53 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
         Animated.spring(buttonScale, { toValue: 1, friction: 4, useNativeDriver: true }).start();
     }, [buttonScale]);
 
-    // ── Submit handler ────────────────────────────────────────────────────────
     const handleCreateAccount = useCallback(async () => {
-        if (!fullName.trim() || !email.trim() || !password.trim()) {
-            setError('Please fill in all fields.');
+        if (!fullName.trim() || !username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+            showAlert('Registration Error', 'Please fill in all required fields.');
             return;
         }
 
-        setError(null);
+        if (password !== confirmPassword) {
+            showAlert('Registration Error', 'Passwords do not match.');
+            return;
+        }
+
         setLoading(true);
 
         try {
             const data = await authService.register(
                 fullName.trim(),
+                username.trim(),
                 email.trim(),
+                mobileNumber.trim(),
                 password,
+                confirmPassword,
             );
             onRegisterSuccess?.(data);
         } catch (err) {
             const serverError = err.response?.data;
-            const message =
-                err.message ||
-                serverError?.email?.[0] ||
-                serverError?.full_name?.[0] ||
-                serverError?.password?.[0] ||
+            const message = 
+                serverError?.email?.[0] || 
+                serverError?.username?.[0] || 
+                serverError?.full_name?.[0] || 
+                serverError?.password?.[0] || 
+                serverError?.confirm_password?.[0] ||
+                (typeof serverError?.non_field_errors === 'string' ? serverError?.non_field_errors : serverError?.non_field_errors?.[0]) ||
                 serverError?.error ||
+                serverError?.detail ||
+                err.message || 
                 'Something went wrong. Please try again.';
-            setError(message);
+            showAlert('Registration Error', message);
         } finally {
             setLoading(false);
         }
-    }, [fullName, email, password, onRegisterSuccess]);
+    }, [fullName, username, email, mobileNumber, password, confirmPassword, onRegisterSuccess, showAlert]);
 
-    // ─────────────────────────────────────────────────────────────────────────
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
-            {/* ── Header ── */}
             <Animated.View
                 style={[
                     styles.header,
@@ -180,7 +183,6 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
             >
-                {/* ── Hero copy ── */}
                 <Animated.View
                     style={{
                         opacity: heroAnim,
@@ -193,7 +195,6 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
                     </Text>
                 </Animated.View>
 
-                {/* ── Form fields (filled variant, uppercase labels) ── */}
                 <Animated.View
                     style={{
                         opacity: formAnim,
@@ -209,11 +210,28 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
                     />
 
                     <FormInput
+                        label="Username"
+                        placeholder="Choose a username"
+                        autoCapitalize="none"
+                        value={username}
+                        onChangeText={setUsername}
+                    />
+
+                    <FormInput
                         label="Email Address"
                         placeholder="name@example.com"
                         keyboardType="email-address"
+                        autoCapitalize="none"
                         value={email}
                         onChangeText={setEmail}
+                    />
+
+                    <FormInput
+                        label="Mobile Number"
+                        placeholder="Optional"
+                        keyboardType="phone-pad"
+                        value={mobileNumber}
+                        onChangeText={setMobileNumber}
                     />
 
                     <FormInput
@@ -223,12 +241,16 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
                         value={password}
                         onChangeText={setPassword}
                     />
+
+                    <FormInput
+                        label="Confirm Password"
+                        placeholder="Confirm your password"
+                        isPassword
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                    />
                 </Animated.View>
 
-                {/* ── Error message ── */}
-                {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-                {/* ── Create Account button ── */}
                 <Animated.View
                     style={{
                         opacity: buttonAnim,
@@ -243,12 +265,11 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
                         disabled={loading}
                     >
                         <Text style={styles.createButtonLabel}>
-                            {loading ? 'Creating account…' : 'Create Account'}
+                            {loading ? 'Creating account...' : 'Create Account'}
                         </Text>
                     </Pressable>
                 </Animated.View>
 
-                {/* ── Bottom — Sign In link ── */}
                 <Animated.View style={[styles.bottomRow, { opacity: bottomAnim }]}>
                     <Text style={styles.bottomText}>Already have an account? </Text>
                     <Pressable onPress={onSignInPress} hitSlop={8}>

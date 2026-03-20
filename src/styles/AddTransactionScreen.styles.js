@@ -248,7 +248,7 @@ export const getStyles = (Colors) => StyleSheet.create({
         backgroundColor: Colors.backgroundPrimary,
     },
     stickyFooterKeyboard: {
-        paddingBottom: 10, // Tighter spacing when keyboard up
+        paddingBottom: 0, // No extra spacing when keyboard up to be flush
     },
 });
 

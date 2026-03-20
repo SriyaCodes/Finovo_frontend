@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FormInput } from '../components/FormInput';
+import { useTheme } from '../styles/theme';
+import { useAlert } from '../contexts/AlertContext';
 import authService from '../services/authService';
 import getLoginStyles from '../styles/LoginScreen.styles';
-import { useTheme } from '../styles/theme';
 
 // ─── Animation config ─────────────────────────────────────────────────────────
 const EASING_ENTER = Easing.out(Easing.cubic);
@@ -26,8 +27,9 @@ const EASING_ENTER = Easing.out(Easing.cubic);
  *
  * @param {{ onBack: () => void, onLoginSuccess: (data: object) => void, onSignUpPress: () => void }} props
  */
-export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress }) {
+export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress, onForgotPassword }) {
     const { colors } = useTheme();
+    const { showAlert } = useAlert();
     const styles = React.useMemo(() => getLoginStyles(colors), [colors]);
 
     const [email, setEmail] = useState('');
@@ -130,7 +132,7 @@ export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress }) {
     // ── Submit handler ────────────────────────────────────────────────────────
     const handleSignIn = useCallback(async () => {
         if (!email.trim() || !password.trim()) {
-            setError('Please enter your email and password.');
+            showAlert('Login Error', 'Please enter your email and password.');
             return;
         }
 
@@ -141,10 +143,13 @@ export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress }) {
             const data = await authService.login(email.trim(), password);
             onLoginSuccess?.(data);
         } catch (err) {
-            const message =
-                err.message ||
-                (err.response?.data?.error ?? 'Something went wrong. Please try again.');
-            setError(message);
+            const serverError = err.response?.data;
+            const message = 
+                serverError?.error || 
+                serverError?.detail || 
+                err.message || 
+                'Something went wrong. Please try again.';
+            showAlert('Login Error', message);
         } finally {
             setLoading(false);
         }
@@ -212,14 +217,14 @@ export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress }) {
                         placeholder="••••••••"
                         isPassword
                         rightLabel="Forgot?"
-                        onRightLabelPress={() => {/* TODO: navigate to ForgotPassword */ }}
+                        onRightLabelPress={onForgotPassword}
                         value={password}
                         onChangeText={setPassword}
                     />
                 </Animated.View>
 
-                {/* ── Error message ── */}
-                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                {/* Error message (fallback for inline if needed, but we use showAlert) */}
+                {/* {error ? <Text style={styles.errorText}>{error}</Text> : null} */}
 
                 {/* ── Sign In button ── */}
                 <Animated.View

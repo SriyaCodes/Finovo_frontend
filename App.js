@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BackHandler } from 'react-native';
+import { BackHandler, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ScreenCapture from 'expo-screen-capture';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -23,9 +23,14 @@ import TransactionInfoScreen from './src/screens/TransactionInfoScreen';
 import NotificationSettingsScreen from './src/screens/NotificationSettingsScreen';
 import PrivacyPolicyScreen from './src/screens/PrivacyPolicyScreen';
 import DataExportScreen from './src/screens/DataExportScreen';
+import OTPScreen from './src/screens/OTPScreen';
+import VerifyEmailScreen from './src/screens/VerifyEmailScreen';
+import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
+import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 import { setAuthToken } from './src/services/apiClient';
 import transactionService from './src/services/transactionService';
 import { ThemeProvider, useTheme } from './src/styles/theme';
+import { AlertProvider, useAlert } from './src/contexts/AlertContext';
 
 function ThemedStatusBar() {
   const { isDark, colors } = useTheme();
@@ -53,12 +58,18 @@ const SCREENS = {
   PRIVACY_POLICY: 'privacy_policy',
   DATA: 'data',
   ACCEPT_PRIVACY: 'accept_privacy',
+  OTP: 'otp',
+  VERIFY_EMAIL: 'verify_email',
+  FORGOT_PASSWORD: 'forgot_password',
+  RESET_PASSWORD: 'reset_password',
 };
 
 export default function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <AlertProvider>
+        <AppContent />
+      </AlertProvider>
     </ThemeProvider>
   );
 }
@@ -72,6 +83,8 @@ function AppContent() {
   const [transactionToEdit, setTransactionToEdit] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [selectedNotification, setSelectedNotification] = useState(null);
+  const [pendingRegistration, setPendingRegistration] = useState(null);
+  const [resetEmail, setResetEmail] = useState('');
 
   useEffect(() => {
     let subscription;
@@ -129,15 +142,41 @@ function AppContent() {
       case 'notifications': navigate(SCREENS.NOTIFICATIONS); break;
       case 'set_budget': navigate(SCREENS.SET_BUDGET); break;
       case 'account_settings': navigate(SCREENS.ACCOUNT_SETTINGS); break;
+      case 'verify_email': navigate(SCREENS.VERIFY_EMAIL); break;
       case 'data': navigate(SCREENS.DATA); break;
       default: break;
     }
   };
 
+  const { showAlert } = useAlert();
+
   const handleAuthSuccess = (data) => {
     setAuthData(data);
     setAuthToken(data.access);
-    navigate(SCREENS.HOME, true);
+
+    if (!data.user.is_verified) {
+      showAlert(
+        "Verify Email",
+        "Your email is not verified. Some features may be limited.",
+        {
+          confirmText: "Verify Now",
+          onConfirm: async () => {
+            try {
+              await authService.sendOTP(data.user.email);
+              navigate(SCREENS.VERIFY_EMAIL);
+            } catch (e) {
+              showAlert("Error", "Failed to send verification code.");
+            }
+          },
+          cancelText: "Later",
+          onCancel: () => navigate(data.is_new_user ? SCREENS.ACCEPT_PRIVACY : SCREENS.HOME, true)
+        }
+      );
+    } else if (data.is_new_user) {
+      navigate(SCREENS.ACCEPT_PRIVACY, true);
+    } else {
+      navigate(SCREENS.HOME, true);
+    }
   };
 
   const handleLogout = () => {
@@ -214,6 +253,7 @@ function AppContent() {
           onBack={() => navigate(SCREENS.WELCOME)}
           onLoginSuccess={handleAuthSuccess}
           onSignUpPress={() => navigate(SCREENS.REGISTER)}
+          onForgotPassword={() => navigate(SCREENS.FORGOT_PASSWORD)}
         />
       )}
 
@@ -222,10 +262,59 @@ function AppContent() {
           onBack={() => navigate(SCREENS.WELCOME)}
           onSignInPress={() => navigate(SCREENS.LOGIN)}
           onRegisterSuccess={(data) => {
-            setAuthData(data);
-            setAuthToken(data.access);
-            navigate(SCREENS.ACCEPT_PRIVACY, true);
+            showAlert(
+                "Registration Successful",
+                "Your account has been created. You can verify your email later from Account Settings to unlock all features.",
+                {
+                    onConfirm: () => navigate(SCREENS.LOGIN)
+                }
+            );
           }}
+        />
+      )}
+
+      {screen === SCREENS.OTP && (
+        <OTPScreen 
+          email={pendingRegistration?.user?.email || ""}
+          onVerifySuccess={() => {
+            if (pendingRegistration) {
+                setAuthData(pendingRegistration);
+                setAuthToken(pendingRegistration.access);
+                setPendingRegistration(null);
+                navigate(SCREENS.ACCEPT_PRIVACY, true);
+            }
+          }}
+          onBack={() => navigate(SCREENS.REGISTER)}
+        />
+      )}
+
+      {screen === SCREENS.VERIFY_EMAIL && (
+        <VerifyEmailScreen
+          email={authData?.user?.email || ""}
+          onVerifySuccess={() => {
+            showAlert("Success", "Your email has been verified!");
+            setAuthData({ ...authData, user: { ...authData.user, is_verified: true } });
+            navigate(SCREENS.HOME, true);
+          }}
+          onBack={() => navigate(SCREENS.ACCOUNT_SETTINGS)}
+        />
+      )}
+
+      {screen === SCREENS.FORGOT_PASSWORD && (
+        <ForgotPasswordScreen
+          onBack={() => navigate(SCREENS.LOGIN)}
+          onSuccess={(email) => {
+            setResetEmail(email);
+            navigate(SCREENS.RESET_PASSWORD);
+          }}
+        />
+      )}
+
+      {screen === SCREENS.RESET_PASSWORD && (
+        <ResetPasswordScreen
+          email={resetEmail}
+          onBack={() => navigate(SCREENS.FORGOT_PASSWORD)}
+          onSuccess={() => navigate(SCREENS.LOGIN, true)}
         />
       )}
 

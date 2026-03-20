@@ -16,10 +16,8 @@ const getOnboardingStyles = (colors) => StyleSheet.create({
         backgroundColor: colors.backgroundPrimary,
     },
 
-    // ── Header: variant A — "logo-skip" (slide 1) ────────────────────────────
     headerLogoSkip: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 24,
         paddingTop: 56,
@@ -30,13 +28,19 @@ const getOnboardingStyles = (colors) => StyleSheet.create({
         fontWeight: Typography.weight.bold,
         color: colors.textPrimary,
         letterSpacing: Typography.tracking.tight,
+        flex: 1,
+        textAlign: 'center',
     },
-    headerSkip: {
+    headerSkipLabel: {
         fontSize: Typography.size.md,
         fontWeight: Typography.weight.medium,
         color: colors.textSecondary,
         letterSpacing: Typography.tracking.wide,
         textTransform: 'uppercase',
+    },
+    headerSkip: {
+        width: 60,
+        alignItems: 'flex-end',
     },
 
     // ── Header: variant B — "back-title" (slide 2+) ──────────────────────────

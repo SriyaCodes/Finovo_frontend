@@ -138,8 +138,8 @@ export default function SetBudgetScreen({ onBack, onNavigate }) {
 
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 40}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+                keyboardVerticalOffset={0}
             >
                 <Animated.ScrollView
                     contentContainerStyle={[

@@ -9,9 +9,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { MEDIA_BASE_URL } from '../constants/api';
 
 import userService from '../services/userService';
+import authService from '../services/authService';
 import BottomNav from '../components/BottomNav';
 import { useTheme, CURRENCIES } from '../styles/theme';
-import CustomAlert from '../components/CustomAlert';
+import { useAlert } from '../contexts/AlertContext';
 
 // ── Helper ────────────────────────────────────────────────────────────────────
 const getInitials = (fn = '', ln = '') =>
@@ -41,6 +42,7 @@ function FieldRow({ label, value, onChangeText, keyboardType, editable = true, p
 // ── Main Screen ───────────────────────────────────────────────────────────────
 export default function AccountSettingsScreen({ onBack, onNavigate }) {
     const { colors, currency, changeCurrency } = useTheme();
+    const { showAlert } = useAlert();
     const BG = colors.backgroundPrimary;
     const CARD = colors.backgroundCard;
     const DARK = colors.textPrimary;
@@ -61,8 +63,6 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
     
     // UI state
     const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
-    const [alertVisible, setAlertVisible] = useState(false);
-    const [alertConfig, setAlertConfig] = useState({ title: '', message: '', destructive: false });
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -85,6 +85,17 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
     useEffect(() => { load(); }, [load]);
 
     // ── Avatar picker ─────────────────────────────────────────────────────────
+    const handleVerifyEmail = async () => {
+        try {
+            await authService.sendOTP(email);
+            showAlert('OTP Sent', 'A verification code has been sent to your terminal/email.', {
+                onConfirm: () => onNavigate('verify_email')
+            });
+        } catch (err) {
+            showAlert('Error', 'Failed to send verification code.');
+        }
+    };
+
     const handlePickPhoto = async () => {
         try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -276,6 +287,15 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                         s={s}
                         MUTED={MUTED}
                     />
+                    {profile && !profile.is_verified && (
+                        <View style={s.verifyContainer}>
+                            <MaterialCommunityIcons name="alert-circle-outline" size={16} color="#FF9500" />
+                            <Text style={s.unverifiedText}>Email not verified</Text>
+                            <Pressable onPress={handleVerifyEmail} style={s.verifyBtn}>
+                                <Text style={s.verifyBtnText}>Verify Now</Text>
+                            </Pressable>
+                        </View>
+                    )}
                     <FieldRow
                         label="PHONE NUMBER"
                         value={phone}
@@ -347,17 +367,6 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                 </View>
             </Modal>
 
-            {/* ── Standard Alert ── */}
-            <CustomAlert 
-                visible={alertVisible}
-                title={alertConfig.title}
-                message={alertConfig.message}
-                onConfirm={() => setAlertVisible(false)}
-                onCancel={() => setAlertVisible(false)}
-                confirmText="OK"
-                cancelText=""
-                destructive={alertConfig.destructive}
-            />
 
             <BottomNav activeTab="profile" onTabChange={onNavigate} />
         </KeyboardAvoidingView>
@@ -455,4 +464,33 @@ const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER) => StyleSheet.
         shadowOpacity: 0.15, shadowRadius: 8, elevation: 4,
     },
     saveBtnText: { color: colors.backgroundPrimary, fontSize: 16, fontWeight: '700' },
+
+    // Verification
+    verifyContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: -12,
+        marginBottom: 16,
+        paddingLeft: 4,
+    },
+    unverifiedText: {
+        fontSize: 13,
+        color: '#FF9500',
+        marginLeft: 6,
+        marginRight: 10,
+        fontWeight: '500',
+    },
+    verifyBtn: {
+        backgroundColor: colors.backgroundCard,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#FF9500',
+    },
+    verifyBtnText: {
+        fontSize: 12,
+        color: '#FF9500',
+        fontWeight: '700',
+    },
 });
