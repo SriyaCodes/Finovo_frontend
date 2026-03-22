@@ -13,6 +13,7 @@ import {
     Modal,
     Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import transactionService from '../services/transactionService';
@@ -24,7 +25,8 @@ import CalendarRangePicker from '../components/CalendarRangePicker';
 export default function EditTransactionScreen({ transaction, onBack, onUpdate }) {
     const { colors, currency } = useTheme();
     const { showAlert } = useAlert();
-    const styles = React.useMemo(() => getStyles(colors), [colors]);
+    const insets = useSafeAreaInsets();
+    const styles = React.useMemo(() => getStyles(colors, insets), [colors, insets]);
     const [type, setType] = useState('EXPENSE'); // 'INCOME' or 'EXPENSE'
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
@@ -204,13 +206,14 @@ export default function EditTransactionScreen({ transaction, onBack, onUpdate })
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-            keyboardVerticalOffset={0}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
             <ScrollView
                 contentContainerStyle={[
                     styles.scrollContent,
-                    keyboardVisible && { paddingBottom: 20 }
+                    { flexGrow: 1 },
+                    keyboardVisible && { paddingBottom: 150 }
                 ]}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
@@ -375,7 +378,7 @@ export default function EditTransactionScreen({ transaction, onBack, onUpdate })
             {!loadingCats && (
                 <View style={[styles.stickyFooter, keyboardVisible && styles.stickyFooterKeyboard]}>
                     {error && <Text style={styles.errorText}>{error}</Text>}
-                    
+
                     <Pressable
                         style={[styles.saveButton, saving && styles.saveButtonDisabled]}
                         onPress={handleSave}

@@ -33,18 +33,18 @@ export default function PrivacyPolicyScreen({ onBack, onAccept, isAcceptanceMode
 
             <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
                 <Text style={s.mainTitle}>Our Commitment to Your Privacy</Text>
-                
+
                 <Text style={s.introText}>
-                    At Finovo, we take your financial privacy seriously. This policy outlines how we handle 
-                    your data to help you budget better without compromising your security. Last updated: 
+                    At Finovo, we take your financial privacy seriously. This policy outlines how we handle
+                    your data to help you budget better without compromising your security. Last updated:
                     October 24, 2023.
                 </Text>
 
                 <View style={s.section}>
                     <Text style={s.sectionTitle}>1. Data Collection</Text>
                     <Text style={s.sectionText}>
-                        We collect only the necessary information to provide our budgeting services, 
-                        including transaction history you choose to sync and your account preferences. 
+                        We collect only the necessary information to provide our budgeting services,
+                        including transaction history you choose to sync and your account preferences.
                         We do not store your bank login credentials.
                     </Text>
                 </View>
@@ -52,8 +52,8 @@ export default function PrivacyPolicyScreen({ onBack, onAccept, isAcceptanceMode
                 <View style={s.section}>
                     <Text style={s.sectionTitle}>2. Information Usage</Text>
                     <Text style={s.sectionText}>
-                        Finovo uses your data to generate personalized spending insights, monthly 
-                        reports, and automated budget suggestions. We do not sell your personal 
+                        Finovo uses your data to generate personalized spending insights, monthly
+                        reports, and automated budget suggestions. We do not sell your personal
                         data to third parties.
                     </Text>
                 </View>
@@ -78,44 +78,44 @@ export default function PrivacyPolicyScreen({ onBack, onAccept, isAcceptanceMode
 
 const getStyles = (colors, BG, DARK, MUTED, CARD, isAcceptanceMode) => StyleSheet.create({
     container: { flex: 1, backgroundColor: BG },
-    header: { 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        marginTop: 60, 
-        paddingHorizontal: 20, 
-        paddingBottom: 16 
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginTop: 60,
+        paddingHorizontal: 20,
+        paddingBottom: 16
     },
     headerTitle: { fontSize: 18, fontWeight: '700', color: DARK },
     scroll: { paddingHorizontal: 24, paddingTop: 20, paddingBottom: 60 },
-    mainTitle: { 
-        fontSize: 32, 
-        fontWeight: '900', 
-        color: DARK, 
-        lineHeight: 38, 
+    mainTitle: {
+        fontSize: 32,
+        fontWeight: '900',
+        color: DARK,
+        lineHeight: 38,
         marginBottom: 24,
         letterSpacing: -0.5,
     },
-    introText: { 
-        fontSize: 16, 
-        color: MUTED, 
-        lineHeight: 24, 
-        marginBottom: 32 
+    introText: {
+        fontSize: 16,
+        color: MUTED,
+        lineHeight: 24,
+        marginBottom: 32
     },
     section: { marginBottom: 32 },
-    sectionTitle: { 
-        fontSize: 20, 
-        fontWeight: '700', 
-        color: DARK, 
-        marginBottom: 12 
+    sectionTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: DARK,
+        marginBottom: 12
     },
-    sectionText: { 
-        fontSize: 16, 
-        color: MUTED, 
-        lineHeight: 24 
+    sectionText: {
+        fontSize: 16,
+        color: MUTED,
+        lineHeight: 24
     },
     quoteBox: {
-        backgroundColor: colors.backgroundCard, 
+        backgroundColor: colors.backgroundCard,
         borderRadius: 20,
         padding: 24,
         borderWidth: 1,

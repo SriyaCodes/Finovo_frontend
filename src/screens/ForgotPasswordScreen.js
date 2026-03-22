@@ -39,7 +39,7 @@ export default function ForgotPasswordScreen({ onBack, onSuccess }) {
     };
 
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
@@ -66,7 +66,7 @@ export default function ForgotPasswordScreen({ onBack, onSuccess }) {
                 {loading ? (
                     <ActivityIndicator size="large" color={colors.textPrimary} style={{ marginTop: 20 }} />
                 ) : (
-                    <Pressable 
+                    <Pressable
                         style={[styles.button, { backgroundColor: colors.textPrimary }]}
                         onPress={handleSendOTP}
                     >

@@ -9,6 +9,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FormInput } from '../components/FormInput';
 import { useTheme } from '../styles/theme';
@@ -22,7 +23,8 @@ const EASING_ENTER = Easing.out(Easing.cubic);
 export default function RegisterScreen({ onBack, onSignInPress, onRegisterSuccess }) {
     const { colors } = useTheme();
     const { showAlert } = useAlert();
-    const styles = React.useMemo(() => getRegisterStyles(colors), [colors]);
+    const insets = useSafeAreaInsets();
+    const styles = React.useMemo(() => getRegisterStyles(colors, insets), [colors, insets]);
 
     const [fullName, setFullName] = useState('');
     const [username, setUsername] = useState('');
@@ -134,16 +136,16 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
             onRegisterSuccess?.(data);
         } catch (err) {
             const serverError = err.response?.data;
-            const message = 
-                serverError?.email?.[0] || 
-                serverError?.username?.[0] || 
-                serverError?.full_name?.[0] || 
-                serverError?.password?.[0] || 
+            const message =
+                serverError?.email?.[0] ||
+                serverError?.username?.[0] ||
+                serverError?.full_name?.[0] ||
+                serverError?.password?.[0] ||
                 serverError?.confirm_password?.[0] ||
                 (typeof serverError?.non_field_errors === 'string' ? serverError?.non_field_errors : serverError?.non_field_errors?.[0]) ||
                 serverError?.error ||
                 serverError?.detail ||
-                err.message || 
+                err.message ||
                 'Something went wrong. Please try again.';
             showAlert('Registration Error', message);
         } finally {
@@ -154,7 +156,7 @@ export default function RegisterScreen({ onBack, onSignInPress, onRegisterSucces
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <Animated.View
                 style={[

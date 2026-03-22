@@ -100,7 +100,7 @@ export default function VerifyEmailScreen({ email, onVerifySuccess, onResend, on
     };
 
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
@@ -123,11 +123,11 @@ export default function VerifyEmailScreen({ email, onVerifySuccess, onResend, on
                             key={index}
                             ref={(ref) => (inputs.current[index] = ref)}
                             style={[
-                                styles.otpInput, 
-                                { 
+                                styles.otpInput,
+                                {
                                     color: colors.textPrimary,
                                     borderColor: digit ? colors.textPrimary : colors.outlinedBorder,
-                                    backgroundColor: colors.backgroundCard 
+                                    backgroundColor: colors.backgroundCard
                                 }
                             ]}
                             keyboardType="number-pad"
@@ -142,7 +142,7 @@ export default function VerifyEmailScreen({ email, onVerifySuccess, onResend, on
                 {loading ? (
                     <ActivityIndicator size="large" color={colors.textPrimary} style={{ marginTop: 40 }} />
                 ) : (
-                    <Pressable 
+                    <Pressable
                         style={[styles.verifyButton, { backgroundColor: colors.textPrimary }]}
                         onPress={() => handleVerify()}
                     >
@@ -156,7 +156,7 @@ export default function VerifyEmailScreen({ email, onVerifySuccess, onResend, on
                     </Text>
                     <Pressable onPress={handleResend} disabled={timer > 0 || resending}>
                         <Text style={[
-                            styles.resendLink, 
+                            styles.resendLink,
                             { color: timer > 0 ? colors.textMuted : colors.textPrimary }
                         ]}>
                             {resending ? 'Sending...' : timer > 0 ? `Resend in ${timer}s` : 'Resend Code'}

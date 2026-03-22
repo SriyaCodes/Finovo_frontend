@@ -9,6 +9,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FormInput } from '../components/FormInput';
 import { useTheme } from '../styles/theme';
@@ -30,7 +31,8 @@ const EASING_ENTER = Easing.out(Easing.cubic);
 export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress, onForgotPassword }) {
     const { colors } = useTheme();
     const { showAlert } = useAlert();
-    const styles = React.useMemo(() => getLoginStyles(colors), [colors]);
+    const insets = useSafeAreaInsets();
+    const styles = React.useMemo(() => getLoginStyles(colors, insets), [colors, insets]);
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -144,10 +146,10 @@ export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress, onF
             onLoginSuccess?.(data);
         } catch (err) {
             const serverError = err.response?.data;
-            const message = 
-                serverError?.error || 
-                serverError?.detail || 
-                err.message || 
+            const message =
+                serverError?.error ||
+                serverError?.detail ||
+                err.message ||
                 'Something went wrong. Please try again.';
             showAlert('Login Error', message);
         } finally {
@@ -159,7 +161,7 @@ export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress, onF
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             {/* ── Header ── */}
             <Animated.View

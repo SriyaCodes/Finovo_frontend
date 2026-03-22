@@ -3,6 +3,7 @@ import {
     View, Text, ScrollView, Pressable, ActivityIndicator,
     Animated, Dimensions, StyleSheet, Modal
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Svg, Path, Circle, G, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { PinchGestureHandler, State } from 'react-native-gesture-handler';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -24,7 +25,8 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
     const DARK = colors.textPrimary;
     const MUTED = colors.textSecondary;
     const ICON_BG = colors.backgroundPrimary === '#121212' ? '#2A2A2A' : '#F0EBE0';
-    const s = React.useMemo(() => getStyles(colors, ACCENT, BG, CARD_BG, DARK, MUTED), [colors]);
+    const insets = useSafeAreaInsets();
+    const s = React.useMemo(() => getStyles(colors, insets, ACCENT, BG, CARD_BG, DARK, MUTED), [colors, insets]);
 
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -207,8 +209,9 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
                     </View>
 
                     {/* ── Filter Row ── */}
-                    <View style={s.filterRow}>
-                        <Pressable style={[s.filterChip, { flex: 1, justifyContent: 'center' }]} onPress={() => {
+                    <View style={{ marginBottom: 24 }}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.filterRow}>
+                            <Pressable style={[s.filterChip, { justifyContent: 'center' }]} onPress={() => {
                             setPendingTimeframe(timeframe);
                             setCustomStart(appliedStart);
                             setCustomEnd(appliedEnd);
@@ -222,7 +225,7 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
 
                         {/* Payment Method filter chip */}
                         <Pressable
-                            style={[s.filterChip, { flex: 1, justifyContent: 'center' }, selectedPaymentMethods.length > 0 && { backgroundColor: ACCENT }]}
+                            style={[s.filterChip, { justifyContent: 'center' }, selectedPaymentMethods.length > 0 && { backgroundColor: ACCENT }]}
                             onPress={() => {
                                 setPendingPaymentMethods([...selectedPaymentMethods]);
                                 setPmModalVisible(true);
@@ -250,7 +253,7 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
 
                         {/* Category filter chip */}
                         <Pressable
-                            style={[s.filterChip, { flex: 1, justifyContent: 'center' }, selectedCategories.length > 0 && { backgroundColor: ACCENT }]}
+                            style={[s.filterChip, { justifyContent: 'center' }, selectedCategories.length > 0 && { backgroundColor: ACCENT }]}
                             onPress={() => {
                                 setPendingCategories([...selectedCategories]);
                                 setCatModalVisible(true);
@@ -275,6 +278,7 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
                                 </Pressable>
                             )}
                         </Pressable>
+                        </ScrollView>
                     </View>
 
                     {/* ── Stat Cards ── */}
@@ -405,9 +409,9 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
                             );
                         })() : (
                             /* Bars */
-                            <ScrollView 
-                                horizontal={data.weekly_data.length > 5} 
-                                showsHorizontalScrollIndicator={false} 
+                            <ScrollView
+                                horizontal={data.weekly_data.length > 5}
+                                showsHorizontalScrollIndicator={false}
                                 bounces={false}
                                 contentContainerStyle={data.weekly_data.length <= 5 && { flex: 1 }}
                             >
@@ -417,9 +421,9 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
                                         const isMax = week.amount === maxWeek && week.amount > 0;
                                         const isActive = activeBar?.label === week.label;
                                         return (
-                                            <Pressable 
-                                                key={week.label} 
-                                                style={[s.barCol, data.weekly_data.length > 5 ? { width: 48, flex: 0 } : { flex: 0, width: 60 }]} 
+                                            <Pressable
+                                                key={week.label}
+                                                style={[s.barCol, data.weekly_data.length > 5 ? { width: 48, flex: 0 } : { flex: 0, width: 60 }]}
                                                 onPress={() => setActiveBar(week)}
                                             >
                                                 <View style={s.barTrack}>
@@ -585,8 +589,8 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
                         <Pressable style={s.applyButton} onPress={handleApplyFilter}>
                             <Text style={s.applyButtonText}>Apply Filter</Text>
                         </Pressable>
-                        <Pressable 
-                            style={s.clearAllButton} 
+                        <Pressable
+                            style={s.clearAllButton}
                             onPress={() => {
                                 setPendingTimeframe('month');
                                 setCustomStart(null);
@@ -653,18 +657,18 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
                                             </View>
                                             <Text style={s.radioTitle}>{cat.name}</Text>
                                         </View>
-                                        <MaterialCommunityIcons 
-                                            name={isSelected ? "check-circle" : "circle-outline"} 
-                                            size={22} 
-                                            color={isSelected ? ACCENT : MUTED} 
+                                        <MaterialCommunityIcons
+                                            name={isSelected ? "check-circle" : "circle-outline"}
+                                            size={22}
+                                            color={isSelected ? ACCENT : MUTED}
                                         />
                                     </Pressable>
                                 );
                             })}
                         </ScrollView>
                         <View style={s.modalFooterRelative}>
-                            <Pressable 
-                                style={s.applyButton} 
+                            <Pressable
+                                style={s.applyButton}
                                 onPress={() => {
                                     setSelectedCategories([...pendingCategories]);
                                     setCatModalVisible(false);
@@ -727,18 +731,18 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
                                             </View>
                                             <Text style={s.radioTitle}>{pm.label}</Text>
                                         </View>
-                                        <MaterialCommunityIcons 
-                                            name={isSelected ? "check-circle" : "circle-outline"} 
-                                            size={22} 
-                                            color={isSelected ? ACCENT : MUTED} 
+                                        <MaterialCommunityIcons
+                                            name={isSelected ? "check-circle" : "circle-outline"}
+                                            size={22}
+                                            color={isSelected ? ACCENT : MUTED}
                                         />
                                     </Pressable>
                                 );
                             })}
                         </ScrollView>
                         <View style={s.modalFooterRelative}>
-                            <Pressable 
-                                style={s.applyButton} 
+                            <Pressable
+                                style={s.applyButton}
                                 onPress={() => {
                                     setSelectedPaymentMethods([...pendingPaymentMethods]);
                                     setPmModalVisible(false);
@@ -813,16 +817,20 @@ export default function AnalyticsScreen({ onBack, onNavigate, onReportPreview, o
     );
 }
 
-const getStyles = (colors, ACCENT, BG, CARD_BG, DARK, MUTED) => StyleSheet.create({
+const getStyles = (colors, insets, ACCENT, BG, CARD_BG, DARK, MUTED) => StyleSheet.create({
     container: { flex: 1, backgroundColor: BG },
-    scroll: { paddingHorizontal: 20, paddingTop: 60, paddingBottom: 100 },
+    scroll: { 
+        paddingHorizontal: 20, 
+        paddingTop: Math.max(insets?.top || 60, 20), 
+        paddingBottom: Math.max(insets?.bottom || 0, 100) 
+    },
 
     // Header
     headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
     headerTitle: { fontSize: 18, fontWeight: '700', color: DARK },
 
     // Filters
-    filterRow: { flexDirection: 'row', gap: 10, marginBottom: 24, alignItems: 'center' },
+    filterRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
     filterChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.backgroundPrimary === '#121212' ? '#1E1E1E' : '#FFFFFF', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
     filterChipText: { fontSize: 13, fontWeight: '600', color: DARK },
     allAccountsChip: { backgroundColor: ACCENT, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
@@ -887,9 +895,9 @@ const getStyles = (colors, ACCENT, BG, CARD_BG, DARK, MUTED) => StyleSheet.creat
 
     // Date Range Modal Styles
     fullModalContainer: { flex: 1, backgroundColor: colors.backgroundPrimary },
-    fullModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 50, paddingBottom: 20 },
+    fullModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: Math.max(insets?.top || 50, 20), paddingBottom: 20 },
     fullModalTitle: { fontSize: 18, fontWeight: 'bold', color: DARK },
-    fullModalScroll: { paddingHorizontal: 20, paddingBottom: 100 },
+    fullModalScroll: { paddingHorizontal: 20, paddingBottom: Math.max(insets?.bottom || 0, 40) },
     radioGroupDate: { gap: 12, marginBottom: 32, marginTop: 10 },
     radioOptionFull: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.backgroundCard, padding: 20, borderRadius: 20 },
     radioTitleFull: { fontSize: 15, fontWeight: '600', color: DARK },
@@ -902,7 +910,7 @@ const getStyles = (colors, ACCENT, BG, CARD_BG, DARK, MUTED) => StyleSheet.creat
 
     customRangeTitle: { fontSize: 16, fontWeight: '700', color: DARK, marginBottom: 16, marginTop: 10 },
 
-    modalFooter: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, paddingBottom: 40, backgroundColor: colors.backgroundPrimary },
+    modalFooter: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, paddingBottom: Math.max(insets?.bottom || 0, 40), backgroundColor: colors.backgroundPrimary },
     modalFooterRelative: { paddingVertical: 16 },
     applyButton: { backgroundColor: DARK, borderRadius: 20, height: 60, alignItems: 'center', justifyContent: 'center' },
     applyButtonText: { color: colors.backgroundPrimary, fontSize: 16, fontWeight: '600' },

@@ -4,7 +4,7 @@ import Typography from './typography';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const getLoginStyles = (colors) => StyleSheet.create({
+const getLoginStyles = (colors, insets) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.backgroundPrimary,
@@ -15,7 +15,7 @@ const getLoginStyles = (colors) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 24,
-        paddingTop: 56,
+        paddingTop: Math.max(insets?.top || 56, 16),
         paddingBottom: 8,
         position: 'relative',
     },
@@ -39,7 +39,7 @@ const getLoginStyles = (colors) => StyleSheet.create({
     scrollContent: {
         paddingHorizontal: 24,
         paddingTop: 32,
-        paddingBottom: 40,
+        paddingBottom: Math.max(40, (insets?.bottom || 0) + 20),
         flexGrow: 1,
     },
 

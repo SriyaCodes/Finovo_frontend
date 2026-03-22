@@ -177,9 +177,9 @@ const SettingRow = ({ title, description, value, onToggle, colors, isLast }) => 
         <Switch
             value={value}
             onValueChange={onToggle}
-            trackColor={{ 
-                false: colors.divider || '#D1D5DB', 
-                true: colors.accent 
+            trackColor={{
+                false: colors.divider || '#D1D5DB',
+                true: colors.accent
             }}
             thumbColor={Platform.OS === 'ios' ? undefined : colors.white}
             ios_backgroundColor={colors.divider || "#D1D5DB"}
@@ -248,7 +248,7 @@ const getStyles = (colors) => StyleSheet.create({
         color: colors.textPrimary,
     },
     proTipCard: {
-        backgroundColor: colors.backgroundCard, 
+        backgroundColor: colors.backgroundCard,
         borderRadius: 20,
         padding: 20,
         flexDirection: 'row',

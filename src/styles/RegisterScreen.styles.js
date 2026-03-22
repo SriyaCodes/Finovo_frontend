@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import Colors from './colors';
 import Typography from './typography';
 
-const getRegisterStyles = (colors) => StyleSheet.create({
+const getRegisterStyles = (colors, insets) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.backgroundPrimary,
@@ -13,7 +13,7 @@ const getRegisterStyles = (colors) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 24,
-        paddingTop: 56,
+        paddingTop: Math.max(insets?.top || 56, 16),
         paddingBottom: 8,
         position: 'relative',
     },
@@ -37,7 +37,7 @@ const getRegisterStyles = (colors) => StyleSheet.create({
     scrollContent: {
         paddingHorizontal: 24,
         paddingTop: 28,
-        paddingBottom: 40,
+        paddingBottom: Math.max(40, (insets?.bottom || 0) + 20),
         flexGrow: 1,
     },
 

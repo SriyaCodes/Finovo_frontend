@@ -3,6 +3,7 @@ import { BackHandler, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ScreenCapture from 'expo-screen-capture';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import SplashScreen from './src/screens/SplashScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
@@ -66,11 +67,13 @@ const SCREENS = {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AlertProvider>
-        <AppContent />
-      </AlertProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AlertProvider>
+          <AppContent />
+        </AlertProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -90,7 +93,7 @@ function AppContent() {
     let subscription;
     const enableCapture = async () => {
       await ScreenCapture.allowScreenCaptureAsync();
-      subscription = ScreenCapture.addScreenshotListener(() => {});
+      subscription = ScreenCapture.addScreenshotListener(() => { });
     };
     enableCapture();
     return () => subscription?.remove?.();
@@ -263,25 +266,25 @@ function AppContent() {
           onSignInPress={() => navigate(SCREENS.LOGIN)}
           onRegisterSuccess={(data) => {
             showAlert(
-                "Registration Successful",
-                "Your account has been created. You can verify your email later from Account Settings to unlock all features.",
-                {
-                    onConfirm: () => navigate(SCREENS.LOGIN)
-                }
+              "Registration Successful",
+              "Your account has been created. You can verify your email later from Account Settings to unlock all features.",
+              {
+                onConfirm: () => navigate(SCREENS.LOGIN)
+              }
             );
           }}
         />
       )}
 
       {screen === SCREENS.OTP && (
-        <OTPScreen 
+        <OTPScreen
           email={pendingRegistration?.user?.email || ""}
           onVerifySuccess={() => {
             if (pendingRegistration) {
-                setAuthData(pendingRegistration);
-                setAuthToken(pendingRegistration.access);
-                setPendingRegistration(null);
-                navigate(SCREENS.ACCEPT_PRIVACY, true);
+              setAuthData(pendingRegistration);
+              setAuthToken(pendingRegistration.access);
+              setPendingRegistration(null);
+              navigate(SCREENS.ACCEPT_PRIVACY, true);
             }
           }}
           onBack={() => navigate(SCREENS.REGISTER)}

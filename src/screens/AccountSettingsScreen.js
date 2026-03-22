@@ -4,6 +4,7 @@ import {
     ActivityIndicator, Animated, Alert, StyleSheet,
     KeyboardAvoidingView, Platform, Image, Modal
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { MEDIA_BASE_URL } from '../constants/api';
@@ -49,7 +50,8 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
     const ACCENT = colors.accent;
     const MUTED = colors.textSecondary;
     const BORDER = colors.divider;
-    const s = React.useMemo(() => getStyles(colors, BG, CARD, DARK, ACCENT, MUTED, BORDER), [colors]);
+    const insets = useSafeAreaInsets();
+    const s = React.useMemo(() => getStyles(colors, BG, CARD, DARK, ACCENT, MUTED, BORDER, insets), [colors, insets]);
 
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [avatarUri, setAvatarUri] = useState(null);  // local picked URI
-    
+
     // UI state
     const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
 
@@ -100,10 +102,10 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
         try {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
             if (status !== 'granted') {
-                setAlertConfig({ 
-                    title: 'Permission Required', 
+                setAlertConfig({
+                    title: 'Permission Required',
                     message: 'Allow photo access to change your profile picture.',
-                    destructive: false 
+                    destructive: false
                 });
                 setAlertVisible(true);
                 return;
@@ -131,10 +133,10 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
 
         try {
             setSaving(true);
-            
+
             // Build either JSON or FormData depending on if we have a new photo
             let payload;
-            
+
             if (avatarUri && !avatarUri.startsWith('http')) {
                 // We have a local picked URI — must use FormData
                 payload = new FormData();
@@ -142,13 +144,13 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                 payload.append('last_name', lastName);
                 payload.append('email', email.trim().toLowerCase());
                 payload.append('phone_number', phone.trim());
-                
+
                 // Get filename and extension from URI
                 const filename = avatarUri.split('/').pop() || 'photo.jpg';
                 const match = /\.(\w+)(\?.*)?$/.exec(filename);
                 const ext = match ? match[1].toLowerCase() : 'jpg';
                 const type = `image/${ext === 'png' ? 'png' : 'jpeg'}`;
-                
+
                 payload.append('avatar', {
                     uri: avatarUri,
                     name: filename.split('?')[0], // strip query params if any
@@ -174,7 +176,7 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
             await userService.updateProfile(payload, config);
             setAlertConfig({ title: 'Saved', message: 'Your profile has been updated.', destructive: false });
             setAlertVisible(true);
-            
+
             // Reload profile to get the new avatar_url from server
             const updated = await userService.getProfile();
             setFullName(`${updated.first_name} ${updated.last_name}`.trim());
@@ -186,13 +188,13 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
         } catch (err) {
             console.warn('Update failed', err.response?.data || err.message);
             let msg = 'Failed to save. Please try again.';
-            
+
             if (err.response) {
                 // Server responded with an error
-                msg = err.response.data?.detail || 
-                      err.response.data?.error || 
-                      (typeof err.response.data === 'string' ? err.response.data : null) ||
-                      msg;
+                msg = err.response.data?.detail ||
+                    err.response.data?.error ||
+                    (typeof err.response.data === 'string' ? err.response.data : null) ||
+                    msg;
             } else if (err.request) {
                 // Request was made but no response received (Network Error)
                 msg = 'Network Error: The server could not be reached. Please check your connection and ensure the file is not too large.';
@@ -200,10 +202,10 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                 msg = err.message || msg;
             }
 
-            setAlertConfig({ 
-                title: 'Error', 
-                message: msg, 
-                destructive: true 
+            setAlertConfig({
+                title: 'Error',
+                message: msg,
+                destructive: true
             });
             setAlertVisible(true);
         } finally {
@@ -224,7 +226,7 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
     return (
         <KeyboardAvoidingView
             style={s.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             {/* ── Fixed top bar ── */}
             <View style={s.topBar}>
@@ -247,13 +249,13 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                         {avatarUri ? (
                             <Image source={{ uri: avatarUri }} style={s.avatarImage} />
                         ) : profile?.avatar_url ? (
-                            <Image 
-                                source={{ 
-                                    uri: profile.avatar_url.startsWith('http') 
-                                        ? profile.avatar_url 
-                                        : `${MEDIA_BASE_URL}${profile.avatar_url}` 
-                                }} 
-                                style={s.avatarImage} 
+                            <Image
+                                source={{
+                                    uri: profile.avatar_url.startsWith('http')
+                                        ? profile.avatar_url
+                                        : `${MEDIA_BASE_URL}${profile.avatar_url}`
+                                }}
+                                style={s.avatarImage}
                             />
                         ) : (
                             <Text style={s.avatarInitials}>{initials}</Text>
@@ -309,8 +311,8 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
 
                 {/* ── Currency Selector ── */}
                 <Text style={[s.fieldLabel, { marginTop: 12 }]}>BASE CURRENCY</Text>
-                <Pressable 
-                    style={s.currencySelector} 
+                <Pressable
+                    style={s.currencySelector}
                     onPress={() => setCurrencyModalVisible(true)}
                 >
                     <View style={s.currencyMain}>
@@ -373,7 +375,7 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
     );
 }
 
-const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER) => StyleSheet.create({
+const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER, insets) => StyleSheet.create({
     container: { flex: 1, backgroundColor: BG },
 
     // Top bar
@@ -386,7 +388,7 @@ const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER) => StyleSheet.
     topBarTitle: { fontSize: 18, fontWeight: '700', color: DARK },
 
     // Scroll
-    scroll: { paddingHorizontal: 24, paddingBottom: 110 },
+    scroll: { paddingHorizontal: 24, paddingBottom: 40 },
 
     // Avatar
     avatarSection: { alignItems: 'center', marginVertical: 24 },
@@ -436,16 +438,16 @@ const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER) => StyleSheet.
 
     // Modal
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-    modalSheet: { 
-        backgroundColor: colors.backgroundCard, 
-        borderTopLeftRadius: 24, borderTopRightRadius: 24, 
-        padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24 
+    modalSheet: {
+        backgroundColor: colors.backgroundCard,
+        borderTopLeftRadius: 24, borderTopRightRadius: 24,
+        padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24
     },
     modalTitle: { fontSize: 18, fontWeight: 'bold', color: DARK, marginBottom: 20 },
-    currencyOption: { 
-        flexDirection: 'row', alignItems: 'center', 
-        paddingVertical: 16, borderBottomWidth: 1, 
-        borderBottomColor: colors.backgroundPrimary 
+    currencyOption: {
+        flexDirection: 'row', alignItems: 'center',
+        paddingVertical: 16, borderBottomWidth: 1,
+        borderBottomColor: colors.backgroundPrimary
     },
     optionFlag: { fontSize: 22, marginRight: 16 },
     optionText: { flex: 1, fontSize: 16, color: DARK },
@@ -454,7 +456,9 @@ const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER) => StyleSheet.
 
     // Save button
     saveBtnWrapper: {
-        paddingHorizontal: 24, paddingBottom: 90, paddingTop: 8,
+        paddingHorizontal: 24, 
+        paddingBottom: Math.max(insets.bottom + 80, 100), 
+        paddingTop: 12,
         backgroundColor: BG,
     },
     saveBtn: {

@@ -70,7 +70,7 @@ export default function ResetPasswordScreen({ email, onBack, onSuccess }) {
     };
 
     return (
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
             style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
@@ -92,11 +92,11 @@ export default function ResetPasswordScreen({ email, onBack, onSuccess }) {
                             key={index}
                             ref={(ref) => (inputs.current[index] = ref)}
                             style={[
-                                styles.otpInput, 
-                                { 
+                                styles.otpInput,
+                                {
                                     color: colors.textPrimary,
                                     borderColor: digit ? colors.textPrimary : colors.outlinedBorder,
-                                    backgroundColor: colors.backgroundCard 
+                                    backgroundColor: colors.backgroundCard
                                 }
                             ]}
                             keyboardType="number-pad"
@@ -127,7 +127,7 @@ export default function ResetPasswordScreen({ email, onBack, onSuccess }) {
                 {loading ? (
                     <ActivityIndicator size="large" color={colors.textPrimary} style={{ marginTop: 20 }} />
                 ) : (
-                    <Pressable 
+                    <Pressable
                         style={[styles.button, { backgroundColor: colors.textPrimary }]}
                         onPress={handleReset}
                     >
