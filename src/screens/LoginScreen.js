@@ -175,10 +175,13 @@ export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress, onF
                     },
                 ]}
             >
-                <Pressable style={styles.headerBackButton} onPress={onBack} hitSlop={12}>
-                    <MaterialCommunityIcons name="arrow-left" size={22} color={colors.textPrimary} />
-                </Pressable>
-                <Text style={styles.headerTitle}>Finovo</Text>
+                <View style={{ width: 40, alignItems: 'flex-start' }}>
+                    <Pressable onPress={onBack} hitSlop={12}>
+                        <MaterialCommunityIcons name="arrow-left" size={26} color={colors.textPrimary} />
+                    </Pressable>
+                </View>
+                <Text style={[styles.headerTitle, { flex: 1, textAlign: 'center', fontSize: 22 }]}>Finovo</Text>
+                <View style={{ width: 40 }} />
             </Animated.View>
 
             <ScrollView

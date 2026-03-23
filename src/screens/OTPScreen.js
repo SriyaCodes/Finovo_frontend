@@ -105,9 +105,13 @@ export default function OTPScreen({ email, onVerifySuccess, onResend, onBack }) 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <View style={styles.header}>
-                <Pressable onPress={onBack} hitSlop={12}>
-                    <MaterialCommunityIcons name="arrow-left" size={26} color={colors.textPrimary} />
-                </Pressable>
+                <View style={{ width: 40, alignItems: 'flex-start' }}>
+                    <Pressable onPress={onBack} hitSlop={12}>
+                        <MaterialCommunityIcons name="arrow-left" size={26} color={colors.textPrimary} />
+                    </Pressable>
+                </View>
+                <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Finovo</Text>
+                <View style={{ width: 40 }} />
             </View>
 
             <View style={styles.content}>
@@ -175,6 +179,17 @@ const styles = StyleSheet.create({
     header: {
         paddingTop: 56,
         paddingHorizontal: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingBottom: 8,
+    },
+    headerTitle: {
+        flex: 1,
+        textAlign: 'center',
+        fontSize: 22,
+        fontWeight: 'bold',
+        letterSpacing: -0.5,
     },
     content: {
         flex: 1,

@@ -75,9 +75,13 @@ export default function ResetPasswordScreen({ email, onBack, onSuccess }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <View style={styles.header}>
-                <Pressable onPress={onBack} hitSlop={12}>
-                    <MaterialCommunityIcons name="arrow-left" size={26} color={colors.textPrimary} />
-                </Pressable>
+                <View style={{ width: 40, alignItems: 'flex-start' }}>
+                    <Pressable onPress={onBack} hitSlop={12}>
+                        <MaterialCommunityIcons name="arrow-left" size={26} color={colors.textPrimary} />
+                    </Pressable>
+                </View>
+                <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Finovo</Text>
+                <View style={{ width: 40 }} />
             </View>
 
             <ScrollView contentContainerStyle={styles.content}>
@@ -141,7 +145,21 @@ export default function ResetPasswordScreen({ email, onBack, onSuccess }) {
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    header: { paddingTop: 56, paddingHorizontal: 24 },
+    header: { 
+        paddingTop: 56, 
+        paddingHorizontal: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingBottom: 8,
+    },
+    headerTitle: {
+        flex: 1,
+        textAlign: 'center',
+        fontSize: 22,
+        fontWeight: 'bold',
+        letterSpacing: -0.5,
+    },
     content: { paddingHorizontal: 24, paddingTop: 40, paddingBottom: 40 },
     title: { fontSize: 28, fontWeight: 'bold', marginBottom: 12 },
     subtitle: { fontSize: 16, lineHeight: 24, marginBottom: 32 },

@@ -24,15 +24,11 @@ const getLoginStyles = (colors, insets) => StyleSheet.create({
         zIndex: 1,
     },
     headerTitle: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        textAlign: 'center',
         fontSize: Typography.size.xl,
         fontWeight: Typography.weight.bold,
         color: colors.textPrimary,
         letterSpacing: Typography.tracking.tight,
-        zIndex: 0,
+        marginLeft: 12, // Parallel to the back arrow
     },
 
     // ── Scroll content ────────────────────────────────────────────────────────
