@@ -14,8 +14,7 @@ const login = async (email, password) => {
         if (!err.response) {
             // Network error — server unreachable
             throw new Error(
-                'Cannot reach server. Make sure Django is running with:\n' +
-                'python manage.py runserver 0.0.0.0:8000'
+                'Cannot reach server.'
             );
         }
         throw err;
@@ -39,8 +38,7 @@ const register = async (fullName, username, email, mobileNumber, password, confi
     } catch (err) {
         if (!err.response) {
             throw new Error(
-                'Cannot reach server. Make sure Django is running with:\n' +
-                'python manage.py runserver 0.0.0.0:8000'
+                'Cannot reach server.'
             );
         }
         throw err;
@@ -82,10 +80,10 @@ const forgotPassword = async (email) => {
 
 const resetPassword = async (email, otp, newPassword) => {
     try {
-        const response = await apiClient.post('/auth/reset-password/', { 
-            email, 
-            otp, 
-            new_password: newPassword 
+        const response = await apiClient.post('/auth/reset-password/', {
+            email,
+            otp,
+            new_password: newPassword
         });
         return response.data;
     } catch (err) {
@@ -93,4 +91,15 @@ const resetPassword = async (email, otp, newPassword) => {
     }
 };
 
-export default { login, register, sendOTP, verifyOTP, forgotPassword, resetPassword };
+/**
+ * Permanently delete the authenticated user's account and all their data.
+ * @param {string} password — current password for confirmation
+ */
+const deleteAccount = async (password) => {
+    const response = await apiClient.delete('/auth/delete-account/', {
+        data: { password },
+    });
+    return response.data;
+};
+
+export default { login, register, sendOTP, verifyOTP, forgotPassword, resetPassword, deleteAccount };

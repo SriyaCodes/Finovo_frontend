@@ -102,7 +102,8 @@ export default function VerifyEmailScreen({ email, onVerifySuccess, onResend, on
     return (
         <KeyboardAvoidingView
             style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior="padding"
+            keyboardVerticalOffset={0}
         >
             <View style={styles.header}>
                 <Pressable onPress={onBack} hitSlop={12}>

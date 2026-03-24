@@ -72,7 +72,8 @@ export default function ResetPasswordScreen({ email, onBack, onSuccess }) {
     return (
         <KeyboardAvoidingView
             style={[styles.container, { backgroundColor: colors.backgroundPrimary }]}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior="padding"
+            keyboardVerticalOffset={Platform.OS === 'android' ? -200 : 0}
         >
             <View style={styles.header}>
                 <View style={{ width: 40, alignItems: 'flex-start' }}>
