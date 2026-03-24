@@ -206,7 +206,8 @@ export default function EditTransactionScreen({ transaction, onBack, onUpdate })
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            behavior="padding"
+            keyboardVerticalOffset={Platform.OS === 'android' ? -200 : 0}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
             <ScrollView

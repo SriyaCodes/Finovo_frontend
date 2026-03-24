@@ -170,8 +170,7 @@ export default function HomeScreen({ onNavigate, onEditTransaction }) {
                                 )}
                             </Pressable>
                             <View>
-                                <Text style={styles.greetingSubtitle}>Welcome back</Text>
-                                <Text style={styles.greetingTitle}>{data.first_name}</Text>
+                                <Text style={styles.greetingTitle}>Hello, {data.first_name || 'User'}</Text>
                             </View>
                         </View>
                         <Pressable style={styles.notificationIcon} onPress={() => onNavigate('notifications')}>

@@ -130,8 +130,8 @@ const getRegisterStyles = (colors, insets) => StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 'auto',
-        paddingTop: 28,
+        marginTop: 40,
+        paddingBottom: 28,
     },
     bottomText: {
         fontSize: Typography.size.base,

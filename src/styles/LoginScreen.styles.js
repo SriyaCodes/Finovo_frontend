@@ -133,8 +133,8 @@ const getLoginStyles = (colors, insets) => StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 'auto',
-        paddingTop: 24,
+        marginTop: 40,
+        paddingBottom: 24,
     },
     bottomText: {
         fontSize: Typography.size.base,

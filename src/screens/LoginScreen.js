@@ -159,10 +159,12 @@ export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress, onF
 
     // ─────────────────────────────────────────────────────────────────────────
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <View style={styles.container}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            >
             {/* ── Header ── */}
             <Animated.View
                 style={[
@@ -259,6 +261,7 @@ export default function LoginScreen({ onBack, onLoginSuccess, onSignUpPress, onF
                     </Pressable>
                 </Animated.View>
             </ScrollView>
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+        </View>
     );
 }

@@ -110,8 +110,9 @@ export default function ProfileScreen({ onBack, onNavigate, onLogout, onAccountS
                                 <Text style={styles.avatarInitials}>{initials}</Text>
                             )}
                         </View>
-                        <Text style={styles.userName}>{fullName}</Text>
-                        <Text style={styles.userEmail}>{profile?.email}</Text>
+                        <Text style={styles.userName}>{profile?.username || fullName}</Text>
+                        <Text style={styles.userEmail}>{profile?.username ? fullName : profile?.email}</Text>
+                        {profile?.username && <Text style={[styles.userEmail, { marginTop: 2 }]}>{profile.email}</Text>}
                     </View>
 
                     {/* ── Monthly Goal Card ── */}
