@@ -30,6 +30,7 @@ import ForgotPasswordScreen from './src/screens/ForgotPasswordScreen';
 import ResetPasswordScreen from './src/screens/ResetPasswordScreen';
 import { setAuthToken } from './src/services/apiClient';
 import transactionService from './src/services/transactionService';
+import authService from './src/services/authService';
 import { ThemeProvider, useTheme } from './src/styles/theme';
 import { AlertProvider, useAlert } from './src/contexts/AlertContext';
 
@@ -415,6 +416,7 @@ function AppContent() {
         <AccountSettingsScreen
           onBack={() => navigate(SCREENS.PROFILE)}
           onNavigate={handleTabNav}
+          onLogout={handleLogout}
         />
       )}
 

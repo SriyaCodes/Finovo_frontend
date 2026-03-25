@@ -41,7 +41,7 @@ function FieldRow({ label, value, onChangeText, keyboardType, editable = true, p
 }
 
 // ── Main Screen ───────────────────────────────────────────────────────────────
-export default function AccountSettingsScreen({ onBack, onNavigate }) {
+export default function AccountSettingsScreen({ onBack, onNavigate, onLogout }) {
     const { colors, currency, changeCurrency } = useTheme();
     const { showAlert } = useAlert();
     const BG = colors.backgroundPrimary;
@@ -61,10 +61,14 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [username, setUsername] = useState('');
     const [avatarUri, setAvatarUri] = useState(null);  // local picked URI
 
     // UI state
     const [currencyModalVisible, setCurrencyModalVisible] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deletePassword, setDeletePassword] = useState('');
+    const [deleting, setDeleting] = useState(false);
 
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -76,6 +80,7 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
             setFullName(`${data.first_name || ''} ${data.last_name || ''}`.trim());
             setEmail(data.email || '');
             setPhone(data.phone_number || '');
+            setUsername(data.username || '');
             Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
         } catch (e) {
             console.warn('Failed to load profile', e);
@@ -167,15 +172,11 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
             }
 
             const config = {};
-            if (payload instanceof FormData) {
-                config.headers = {
-                    'Content-Type': 'multipart/form-data',
-                };
-            }
+            // Note: Do NOT manually set Content-Type to multipart/form-data. 
+            // Axios/fetch will handle it and append the correct boundary.
 
             await userService.updateProfile(payload, config);
-            setAlertConfig({ title: 'Saved', message: 'Your profile has been updated.', destructive: false });
-            setAlertVisible(true);
+            showAlert('Saved', 'Your profile has been updated.');
 
             // Reload profile to get the new avatar_url from server
             const updated = await userService.getProfile();
@@ -202,14 +203,27 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                 msg = err.message || msg;
             }
 
-            setAlertConfig({
-                title: 'Error',
-                message: msg,
-                destructive: true
-            });
-            setAlertVisible(true);
+            showAlert('Error', msg);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleDeleteAccount = async () => {
+        if (!deletePassword) {
+            showAlert('Required', 'Please enter your password to confirm deletion.');
+            return;
+        }
+        setDeleting(true);
+        try {
+            await authService.deleteAccount(deletePassword);
+            showAlert('Success', 'Your account has been permanently deleted.');
+            if (onLogout) onLogout();
+        } catch (err) {
+            showAlert('Error', err.response?.data?.error || 'Failed to delete account.');
+        } finally {
+            setDeleting(false);
+            setDeleteModalVisible(false);
         }
     };
 
@@ -224,10 +238,12 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
     const initials = getInitials(profile?.first_name, profile?.last_name);
 
     return (
-        <KeyboardAvoidingView
-            style={s.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <View style={s.container}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            >
             {/* ── Fixed top bar ── */}
             <View style={s.topBar}>
                 <Pressable onPress={onBack} hitSlop={12}>
@@ -240,7 +256,7 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
             <Animated.ScrollView
                 contentContainerStyle={s.scroll}
                 showsVerticalScrollIndicator={false}
-                style={{ opacity: fadeAnim }}
+                style={{ opacity: fadeAnim, flex: 1 }}
                 keyboardShouldPersistTaps="handled"
             >
                 {/* ── Avatar ── */}
@@ -281,6 +297,14 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                         MUTED={MUTED}
                     />
                     <FieldRow
+                        label="USERNAME"
+                        value={username}
+                        editable={false}
+                        placeholder="Not set"
+                        s={s}
+                        MUTED={MUTED}
+                    />
+                    <FieldRow
                         label="EMAIL ADDRESS"
                         value={email}
                         onChangeText={setEmail}
@@ -303,42 +327,69 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                         value={phone}
                         onChangeText={setPhone}
                         keyboardType="phone-pad"
-                        placeholder="+1 (555) 000-0000"
+                        placeholder="Your phone number"
                         s={s}
                         MUTED={MUTED}
                     />
                 </View>
 
                 {/* ── Currency Selector ── */}
-                <Text style={[s.fieldLabel, { marginTop: 12 }]}>BASE CURRENCY</Text>
+                <View style={[s.fieldRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+                    <Text style={s.fieldLabel}>BASE CURRENCY</Text>
+                </View>
                 <Pressable
                     style={s.currencySelector}
                     onPress={() => setCurrencyModalVisible(true)}
                 >
-                    <View style={s.currencyMain}>
+                    <View style={s.currencyLeft}>
                         <Text style={s.currencyFlag}>{currency.flag}</Text>
-                        <Text style={s.currencyText}>{currency.label} ({currency.symbol})</Text>
+                        <View>
+                            <Text style={s.currencyName}>{currency.label}</Text>
+                            <Text style={s.currencyCode}>{currency.code} ({currency.symbol})</Text>
+                        </View>
                     </View>
-                    <MaterialCommunityIcons name="chevron-down" size={20} color={MUTED} />
+                    <MaterialCommunityIcons name="chevron-down" size={20} color={DARK} />
                 </Pressable>
-                <View style={[s.fieldDivider, { marginTop: 4 }]} />
+
+                <View style={[s.fieldDivider, { marginTop: 12 }]} />
+ 
+                {/* ── Delete Account ── */}
+                <View style={{ marginTop: 24 }}>
+                    <View style={[s.fieldRow, { borderBottomWidth: 0, paddingBottom: 0 }]}>
+                        <Text style={s.fieldLabel}>DELETE ACCOUNT</Text>
+                    </View>
+                    <Pressable
+                        style={s.currencySelector}
+                        onPress={() => setDeleteModalVisible(true)}
+                    >
+                        <View style={s.currencyLeft}>
+                            <MaterialCommunityIcons name="delete-outline" size={24} color="#FF3B30" />
+                            <View style={{ marginLeft: 12 }}>
+                                <Text style={[s.currencyName, { color: '#FF3B30' }]}>Delete Account</Text>
+                                <Text style={s.currencyCode}>Permanently remove all data</Text>
+                            </View>
+                        </View>
+                        <MaterialCommunityIcons name="chevron-right" size={20} color={MUTED} />
+                    </Pressable>
+                </View>
+
+                {/* ── Save Button ── */}
+                <View style={s.saveBtnWrapper}>
+                    <Pressable
+                        style={[s.saveBtn, saving && { opacity: 0.7 }]}
+                        onPress={handleSave}
+                        disabled={saving}
+                    >
+                        {saving ? (
+                            <ActivityIndicator color={colors.backgroundPrimary} />
+                        ) : (
+                            <Text style={s.saveBtnText}>Save</Text>
+                        )}
+                    </Pressable>
+                </View>
 
             </Animated.ScrollView>
 
-            {/* Sticky Save Button below scroll, above BottomNav */}
-            <View style={s.saveBtnWrapper}>
-                <Pressable
-                    style={[s.saveBtn, saving && { opacity: 0.7 }]}
-                    onPress={handleSave}
-                    disabled={saving}
-                >
-                    {saving ? (
-                        <ActivityIndicator color={colors.backgroundPrimary} />
-                    ) : (
-                        <Text style={s.saveBtnText}>Save</Text>
-                    )}
-                </Pressable>
-            </View>
 
             {/* ── Currency Selection Modal ── */}
             <Modal visible={currencyModalVisible} animationType="slide" transparent={true} onRequestClose={() => setCurrencyModalVisible(false)}>
@@ -369,10 +420,59 @@ export default function AccountSettingsScreen({ onBack, onNavigate }) {
                 </View>
             </Modal>
 
+            {/* ── Delete Account Modal ── */}
+            <Modal visible={deleteModalVisible} animationType="fade" transparent={true}>
+                <View style={s.modalOverlay}>
+                    <View style={s.modalSheet}>
+                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                            <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: 'rgba(255,59,48,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                                <MaterialCommunityIcons name="alert-circle-outline" size={32} color="#FF3B30" />
+                            </View>
+                            <Text style={s.modalTitle}>Delete Account?</Text>
+                            <Text style={{ color: MUTED, textAlign: 'center', lineHeight: 22, fontSize: 14 }}>
+                                This action is permanent. All your transactions, budgets, and settings will be erased forever.
+                            </Text>
+                        </View>
 
-            <BottomNav activeTab="profile" onTabChange={onNavigate} />
+                        <FieldRow
+                            label="CONFIRM PASSWORD"
+                            value={deletePassword}
+                            onChangeText={setDeletePassword}
+                            placeholder="Enter password to confirm"
+                            s={s}
+                            MUTED={MUTED}
+                        />
+
+                        <View style={{ flexDirection: 'row', gap: 12, marginTop: 12 }}>
+                            <Pressable
+                                style={[s.closeModalBtn, { flex: 1, backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: 12, marginTop: 0 }]}
+                                onPress={() => {
+                                    setDeleteModalVisible(false);
+                                    setDeletePassword('');
+                                }}
+                            >
+                                <Text style={[s.closeModalText, { color: DARK }]}>Cancel</Text>
+                            </Pressable>
+                            <Pressable
+                                style={[s.saveBtn, { flex: 2, backgroundColor: '#FF3B30', marginTop: 0 }]}
+                                onPress={handleDeleteAccount}
+                                disabled={deleting}
+                            >
+                                {deleting ? (
+                                    <ActivityIndicator color="#fff" />
+                                ) : (
+                                    <Text style={[s.saveBtnText, { color: '#fff' }]}>Delete Account</Text>
+                                )}
+                            </Pressable>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
         </KeyboardAvoidingView>
-    );
+        <BottomNav activeTab="profile" onTabChange={onNavigate} />
+    </View>
+);
 }
 
 const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER, insets) => StyleSheet.create({
@@ -430,11 +530,13 @@ const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER, insets) => Sty
     // Currency Selector
     currencySelector: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingVertical: 12,
+        paddingVertical: 14,
     },
-    currencyMain: { flexDirection: 'row', alignItems: 'center' },
-    currencyFlag: { fontSize: 22, marginRight: 12 },
-    currencyText: { fontSize: 16, fontWeight: '500', color: DARK },
+    currencyLeft: { flexDirection: 'row', alignItems: 'center' },
+    currencyFlag: { fontSize: 24, marginRight: 12 },
+    currencyName: { fontSize: 16, fontWeight: '600', color: DARK },
+    currencyCode: { fontSize: 13, color: MUTED, marginTop: 2 },
+    currencyValue: { fontSize: 16, fontWeight: '600', color: DARK, textAlign: 'right' },
 
     // Modal
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
@@ -456,10 +558,9 @@ const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER, insets) => Sty
 
     // Save button
     saveBtnWrapper: {
-        paddingHorizontal: 24, 
-        paddingBottom: Math.max(insets.bottom + 80, 100), 
-        paddingTop: 12,
-        backgroundColor: BG,
+        paddingHorizontal: 24,
+        paddingBottom: Math.max(insets.bottom + 100, 120),
+        paddingTop: 32,
     },
     saveBtn: {
         backgroundColor: DARK, borderRadius: 30,
@@ -497,4 +598,5 @@ const getStyles = (colors, BG, CARD, DARK, ACCENT, MUTED, BORDER, insets) => Sty
         color: '#FF9500',
         fontWeight: '700',
     },
+
 });
